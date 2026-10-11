@@ -1,10 +1,21 @@
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function AdminPage() {
   const [issues, setIssues] = useState([]);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } finally {
+      navigate("/login", { replace: true });
+    }
+  }
 
   const [stats, setStats] = useState({
     totalIssues: 0,
@@ -96,43 +107,43 @@ function AdminPage() {
 
         <nav className="sidebar-nav">
 
-  <p className="nav-title">
-    MAIN MENU
-  </p>
+          <p className="nav-title">
+            MAIN MENU
+          </p>
 
-  <Link
-    to="/admin"
-    className="sidebar-nav-item active"
-  >
-    <span>⌂</span>
-    Dashboard
-  </Link>
+          <Link
+            to="/admin"
+            className="sidebar-nav-item active"
+          >
+            <span>⌂</span>
+            Dashboard
+          </Link>
 
-  <Link
-    to="/admin/issues"
-    className="sidebar-nav-item"
-  >
-    <span>▣</span>
-    Issues
-  </Link>
+          <Link
+            to="/admin/issues"
+            className="sidebar-nav-item"
+          >
+            <span>▣</span>
+            Issues
+          </Link>
 
-  <Link
-    to="/admin/map"
-    className="sidebar-nav-item"
-  >
-    <span>⌖</span>
-    Map
-  </Link>
+          <Link
+            to="/admin/map"
+            className="sidebar-nav-item"
+          >
+            <span>⌖</span>
+            Map
+          </Link>
 
-  <Link
-    to="/admin/analytics"
-    className="sidebar-nav-item"
-  >
-    <span>◔</span>
-    Analytics
-  </Link>
+          <Link
+            to="/admin/analytics"
+            className="sidebar-nav-item"
+          >
+            <span>◔</span>
+            Analytics
+          </Link>
 
-</nav>
+        </nav>
 
 
         <div className="sidebar-bottom">
@@ -148,12 +159,13 @@ function AdminPage() {
             </div>
           </div>
 
-          <Link
-            to="/"
-            className="sidebar-citizen-link"
+          <button
+            type="button"
+            className="sidebar-citizen-link sidebar-logout-button"
+            onClick={handleLogout}
           >
-            ← Citizen Portal
-          </Link>
+            ↪ Logout
+          </button>
 
         </div>
 
@@ -464,9 +476,8 @@ function AdminPage() {
                   <div>
 
                     <span
-                      className={`priority-pill ${
-                        issue.priorityLevel?.toLowerCase()
-                      }`}
+                      className={`priority-pill ${issue.priorityLevel?.toLowerCase()
+                        }`}
                     >
                       {issue.priorityLevel}
                     </span>
@@ -494,11 +505,10 @@ function AdminPage() {
                   <div>
 
                     <span
-                      className={`status-pill ${
-                        issue.status
-                          ?.toLowerCase()
-                          .replace(" ", "-")
-                      }`}
+                      className={`status-pill ${issue.status
+                        ?.toLowerCase()
+                        .replace(" ", "-")
+                        }`}
                     >
                       {issue.status}
                     </span>

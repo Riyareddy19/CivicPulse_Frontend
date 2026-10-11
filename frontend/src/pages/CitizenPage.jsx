@@ -1,8 +1,9 @@
 
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import api from "../services/api";
 import IssueMap from "../components/IssueMap";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const AREAS = [
   "Kukatpally",
@@ -29,6 +30,17 @@ const SEVERITIES = [
 ];
 
 function CitizenPage() {
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch {
+      alert("Logout failed. Please try again.");
+    }
+  };
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -95,8 +107,18 @@ function CitizenPage() {
     }));
   }
 
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    if (!isAuthenticated) {
+      navigate("/login", {
+        state: {
+          message: "Please sign in before submitting a civic issue.",
+        },
+      });
+      return;
+    }
 
     setLoading(true);
     setError("");
@@ -105,19 +127,19 @@ function CitizenPage() {
     try {
       await api.post("/issues", {
         ...form,
-        reporterName: form.reporterName.trim(),
+        reporterName: user.fullName,
         description: form.description.trim(),
-        severity: Number(form.severity)
+        severity: Number(form.severity),
       });
 
       setMessage("Your report has been submitted successfully!");
 
       setForm({
-        reporterName: "",
+        reporterName: user.fullName,
         category: "Potholes",
         description: "",
         area: "Kukatpally",
-        severity: 3
+        severity: 3,
       });
 
       await loadIssues();
@@ -132,8 +154,10 @@ function CitizenPage() {
     }
   }
 
+
   return (
     <div className="cp-page">
+
       {/* Top navigation */}
       <header className="cp-header">
         <Link to="/" className="cp-brand">
@@ -144,11 +168,40 @@ function CitizenPage() {
           </span>
         </Link>
 
-        <Link to="/admin" className="cp-admin-link">
-          <span>♧</span>
-          Admin Portal
-        </Link>
+        <nav className="cp-auth-nav">
+          {!isAuthenticated ? (
+            <>
+              <Link to="/login" className="cp-admin-link">
+                Sign in
+              </Link>
+              <Link to="/register" className="cp-nav-register">
+                Create account
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="cp-user-greeting">
+                Hi, {user.fullName}
+              </span>
+
+              {isAdmin && (
+                <Link to="/admin" className="cp-admin-link">
+                  Admin Dashboard
+                </Link>
+              )}
+
+              <button
+                type="button"
+                className="cp-admin-link cp-logout-button"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          )}
+        </nav>
       </header>
+
 
       <main className="cp-main">
         {/* Hero banner */}
@@ -201,11 +254,12 @@ function CitizenPage() {
                 <input
                   id="reporterName"
                   name="reporterName"
-                  value={form.reporterName}
+                  value={isAuthenticated ? user.fullName : form.reporterName}
                   onChange={handleChange}
                   placeholder="Enter your name"
                   maxLength={100}
                   required
+                  readOnly={isAuthenticated}
                 />
               </div>
 
@@ -366,7 +420,7 @@ function CitizenPage() {
                 <p>Latest civic issues from your community.</p>
               </div>
             </div>
-            <Link to="/admin/issues" className="cp-view-all">
+            <Link to="/reports" className="cp-view-all">
               View all →
             </Link>
           </div>
