@@ -1,57 +1,34 @@
 
 import api from "./api";
 
-// Get a CSRF token before sending a protected request.
+// Fetch a CSRF token so the backend sets the XSRF-TOKEN cookie.
+// api.js will read the cookie and attach the X-XSRF-TOKEN header.
 export async function getCsrfToken() {
-  const response = await api.get("/auth/csrf");
-  return response.data;
+  await api.get("/auth/csrf");
 }
 
-// Register a new citizen account.
 export async function registerUser(userData) {
-  const csrf = await getCsrfToken();
+  await getCsrfToken();
 
-  const response = await api.post("/auth/register", userData, {
-    headers: {
-      [csrf.headerName]: csrf.token,
-    },
-  });
-
+  const response = await api.post("/auth/register", userData);
   return response.data;
 }
 
-// Log in an existing user.
 export async function loginUser(credentials) {
-  const csrf = await getCsrfToken();
+  await getCsrfToken();
 
-  const response = await api.post("/auth/login", credentials, {
-    headers: {
-      [csrf.headerName]: csrf.token,
-    },
-  });
-
+  const response = await api.post("/auth/login", credentials);
   return response.data;
 }
 
-// Get the currently authenticated user.
 export async function getCurrentUser() {
   const response = await api.get("/auth/me");
   return response.data;
 }
 
-// Log out the current user.
 export async function logoutUser() {
-  const csrf = await getCsrfToken();
+  await getCsrfToken();
 
-  const response = await api.post(
-    "/auth/logout",
-    {},
-    {
-      headers: {
-        [csrf.headerName]: csrf.token,
-      },
-    }
-  );
-
+  const response = await api.post("/auth/logout", {});
   return response.data;
 }
