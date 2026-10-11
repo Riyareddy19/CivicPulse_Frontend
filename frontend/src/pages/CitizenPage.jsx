@@ -125,12 +125,23 @@ function CitizenPage() {
     setMessage("");
 
     try {
-      await api.post("/issues", {
-        ...form,
-        reporterName: user.fullName,
-        description: form.description.trim(),
-        severity: Number(form.severity),
-      });
+      const csrfResponse = await api.get("/auth/csrf");
+      const csrf = csrfResponse.data;
+
+      await api.post(
+        "/issues",
+        {
+          ...form,
+          reporterName: user.fullName,
+          description: form.description.trim(),
+          severity: Number(form.severity),
+        },
+        {
+          headers: {
+            [csrf.headerName]: csrf.token,
+          },
+        }
+      );
 
       setMessage("Your report has been submitted successfully!");
 
@@ -144,7 +155,8 @@ function CitizenPage() {
 
       await loadIssues();
     } catch (err) {
-      console.error(err);
+      console.error("Report submission failed:", err.response?.data || err);
+
       setError(
         err.response?.data?.message ||
         "Unable to submit your report. Please try again."
