@@ -1,23 +1,32 @@
 
 import api from "./api";
 
-// Fetch a CSRF token so the backend sets the XSRF-TOKEN cookie.
-// api.js will read the cookie and attach the X-XSRF-TOKEN header.
 export async function getCsrfToken() {
-  await api.get("/auth/csrf");
+  const response = await api.get("/auth/csrf");
+  return response.data;
 }
 
 export async function registerUser(userData) {
-  await getCsrfToken();
+  const csrf = await getCsrfToken();
 
-  const response = await api.post("/auth/register", userData);
+  const response = await api.post("/auth/register", userData, {
+    headers: {
+      [csrf.headerName]: csrf.token,
+    },
+  });
+
   return response.data;
 }
 
 export async function loginUser(credentials) {
-  await getCsrfToken();
+  const csrf = await getCsrfToken();
 
-  const response = await api.post("/auth/login", credentials);
+  const response = await api.post("/auth/login", credentials, {
+    headers: {
+      [csrf.headerName]: csrf.token,
+    },
+  });
+
   return response.data;
 }
 
@@ -27,8 +36,13 @@ export async function getCurrentUser() {
 }
 
 export async function logoutUser() {
-  await getCsrfToken();
+  const csrf = await getCsrfToken();
 
-  const response = await api.post("/auth/logout", {});
+  const response = await api.post("/auth/logout", {}, {
+    headers: {
+      [csrf.headerName]: csrf.token,
+    },
+  });
+
   return response.data;
 }
