@@ -57,9 +57,18 @@ function AdminPage() {
 
   async function updateStatus(id, status) {
     try {
-      await api.patch(`/issues/${id}/status`, {
-        status
-      });
+      const csrfResponse = await api.get("/auth/csrf");
+      const csrf = csrfResponse.data;
+
+      await api.patch(
+        `/issues/${id}/status`,
+        { status },
+        {
+          headers: {
+            [csrf.headerName]: csrf.token,
+          },
+        }
+      );
 
       setSuccess("Issue status updated!");
       setError("");
@@ -70,7 +79,7 @@ function AdminPage() {
         setSuccess("");
       }, 2500);
     } catch (err) {
-      console.error(err);
+      console.error("Status update failed:", err.response?.data || err);
 
       setError(
         err.response?.data?.message ||
