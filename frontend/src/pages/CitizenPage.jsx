@@ -43,6 +43,7 @@ function CitizenPage() {
   };
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingIssues, setLoadingIssues] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 

@@ -33,11 +33,7 @@ function ProtectedAdminRoute({ children }) {
 }
 
 function CitizenRoute({ children }) {
-  const { user, checkingAuth } = useAuth();
-
-  if (checkingAuth) {
-    return <p>Checking your account...</p>;
-  }
+  const { user } = useAuth();
 
   if (user?.role === "ADMIN") {
     return <Navigate to="/admin" replace />;

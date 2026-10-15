@@ -17,11 +17,12 @@ function CitizenIssuesPage() {
       try {
         const response = await api.get("/issues");
         setIssues(response.data);
+        setError("");
       } catch (err) {
         console.error(err);
-        setError("Unable to load reports. Please try again.");
+        setError("Couldn't load reports. Check that the backend is running.");
       } finally {
-        setLoading(false);
+        setLoadingIssues(false);
       }
     }
 
