@@ -22,7 +22,7 @@ function CitizenIssuesPage() {
         console.error(err);
         setError("Couldn't load reports. Check that the backend is running.");
       } finally {
-        setLoadingIssues(false);
+        setLoading(false);
       }
     }
 
